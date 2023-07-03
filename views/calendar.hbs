@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{> head_meta}}
+    <title>BCA National Honor Society</title>
+</head>
+
+<body>
+    {{> header}}
+    <h1>Tutor Availability Calendar</h1>
+    <select id="classSelect">
+        <option value="all">All</option>
+        <option value="mai">Math Analysis I</option>
+        <option value="apcalcab">AP Calculus AB</option>
+        <option value="apcs">AP Computer Science A</option>
+        <option value="wrldhisti">World History I</option>
+        <option value="other">Other</option>
+    </select>
+    <div id="calendar"></div>
+    {{> footer}}
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const classSelect = document.getElementById('classSelect');
+        const calendar = document.getElementById('calendar');
+        classSelect.addEventListener('change', function () {
+            let classSelected = classSelect.options[classSelect.selectedIndex].value;
+            fetch("/calendar", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ class: classSelected })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        window.location.href = "/calendar";
+                    }
+                })
+                .then(data => {
+                    calendar.textContent = data;
+                })
+                .catch(error => {
+                    window.location.href = "/calendar";
+                });
+        });
+    });
+</script>
+
+</html>
