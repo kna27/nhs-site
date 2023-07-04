@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{> head_meta}}
+    <title>BCA National Honor Society</title>
+</head>
+
+<body>
+    {{> header}}
+    <h1>Tutoring Options</h1>
+    <form action="/tutor" method="POST">
+        <h2>Select classes you can tutor in</h2>
+        {{#each classes}}
+        <input type="checkbox" id="{{@key}}" name="{{@key}}">{{this}}<br>
+        {{/each}}
+        <input type="submit" value="Submit">
+    <div id="calendar"></div>
+    {{> footer}}
+</body>
+
+</html>

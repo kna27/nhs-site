@@ -33,6 +33,13 @@ async function createTutor(google_sub, email, name) {
     await pool.query(query, values);
 }
 
+async function getTutorByGoogleSub(google_sub) {
+    const query = `SELECT * FROM tutors WHERE google_sub = $1`;
+    const values = [google_sub];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
 async function deleteTutorSubjects(tutor_id) {
     const query = `DELETE FROM tutor_subjects WHERE tutor_id = $1`;
     const values = [tutor_id];
@@ -45,7 +52,9 @@ async function deleteTutorAvailability(tutor_id) {
     await pool.query(query, values);
 }
 
-async function updateTutorSubjects(tutor_id, subjects) {
+async function updateTutorSubjects(tutor_google_sub, subjects) {
+    const tutor = await getTutorByGoogleSub(tutor_google_sub);
+    const tutor_id = tutor.id;
     await deleteTutorSubjects(tutor_id);
     const query = `INSERT INTO tutor_subjects (tutor_id, subject) VALUES ($1, $2)`;
     for (let subject of subjects) {
@@ -79,6 +88,7 @@ async function getAvailableTutorsBySubject(subject) {
 
 module.exports = {
     createTutor,
+    getTutorByGoogleSub,
     updateTutorSubjects,
     updateTutorAvailability,
     getAvailableTutorsBySubject
