@@ -1,12 +1,11 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
-const dotenv = require('dotenv');
 const Queries = require('./queries');
 const config = require('config');
-dotenv.config();
+
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    clientID: config.get('auth.google_client_id'),
+    clientSecret: config.get('auth.google_client_secret'),
     callbackURL: "http://localhost:3000/auth/callback",
     passReqToCallback: true,
 },

@@ -33,7 +33,7 @@ function isLoggedIn(req, res, next) {
     req.user ? next() : res.redirect('/');
 }
 
-app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
+app.use(session({ secret: config.get("server.session_secret"), resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 

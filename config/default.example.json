@@ -1,0 +1,22 @@
+{
+    "__comment0": "This is the config file for the NHS Tutoring website. Replace the values with your own and rename this file to default.json",
+    "server": {
+        "port": 3000,
+        "session_secret": "secret"
+    },
+    "db": {
+        "pg_host": "",
+        "pg_port": "",
+        "pg_user": "",
+        "pg_password": "",
+        "pg_database": ""
+    },
+    "auth": {
+        "google_client_id": "",
+        "google_client_secret": ""
+    },
+    "__comment1": "Email addresses of NHS members",
+    "nhsMembers": [],
+    "__comment2": "Classes that are available for tutoring",
+    "classes": []
+}

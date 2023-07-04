@@ -1,13 +1,13 @@
 const { Pool } = require('pg');
-const dotenv = require('dotenv');
-dotenv.config();
+const config = require('config');
+
 const pool = new Pool({
     max: 20,
-    host: process.env.PG_HOST,
-    port: process.env.DG_PORT,
-    user: process.env.PG_USER,
-    password: process.env.PG_PASSWORD,
-    database: process.env.PG_DATABASE,
+    host: config.get('db.pg_host'),
+    port: config.get('db.pg_port'),
+    user: config.get('db.pg_user'),
+    password: config.get('db.pg_password'),
+    database: config.get('db.pg_database'),
     idleTimeoutMillis: 30000
 });
 
