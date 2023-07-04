@@ -63,7 +63,9 @@ async function updateTutorSubjects(tutor_google_sub, subjects) {
     }
 }
 
-async function updateTutorAvailability(tutor_id, availability) {
+async function updateTutorAvailability(tutor_google_sub, availability) {
+    const tutor = await getTutorByGoogleSub(tutor_google_sub);
+    const tutor_id = tutor.id;
     await deleteTutorAvailability(tutor_id);
     const query = `INSERT INTO availability (tutor_id, day, period) VALUES ($1, $2, $3)`;
     for (let day in availability) {
@@ -72,6 +74,31 @@ async function updateTutorAvailability(tutor_id, availability) {
             await pool.query(query, values);
         }
     }
+}
+
+async function getTutorAvailability(tutor_google_sub) {
+    const tutor = await getTutorByGoogleSub(tutor_google_sub);
+    const tutor_id = tutor.id;
+    const query = `SELECT day, period FROM availability WHERE tutor_id = $1`;
+    const values = [tutor_id];
+    const result = await pool.query(query, values);
+    let availability = {};
+    for (let row of result.rows) {
+        if (!(row.day in availability)) {
+            availability[row.day] = [];
+        }
+        availability[row.day].push(row.period);
+    }
+    return availability;
+}
+
+async function getTutorsSubjects(tutor_google_sub) {
+    const tutor = await getTutorByGoogleSub(tutor_google_sub);
+    const tutor_id = tutor.id;
+    const query = `SELECT subject FROM tutor_subjects WHERE tutor_id = $1`;
+    const values = [tutor_id];
+    const result = await pool.query(query, values);
+    return result.rows.map((row) => row.subject);
 }
 
 async function getAvailableTutorsBySubject(subject) {
@@ -91,5 +118,7 @@ module.exports = {
     getTutorByGoogleSub,
     updateTutorSubjects,
     updateTutorAvailability,
+    getTutorAvailability,
+    getTutorsSubjects,
     getAvailableTutorsBySubject
 };

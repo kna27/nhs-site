@@ -18,6 +18,15 @@ config.get('classes').forEach((className) => {
 
 const Handlebars = require("hbs");
 Handlebars.registerPartials(__dirname + "/views/partials/", (error) => { if (error) throw error });
+
+Handlebars.registerHelper('contains', function (arr, value) {
+    return arr.includes(value);
+});
+
+Handlebars.registerHelper('json', function (context) {
+    return JSON.stringify(context);
+});
+
 app.set("view engine", "hbs");
 
 app.use(express.static(__dirname + "/public"));
@@ -46,48 +55,72 @@ app.get('/auth/callback',
 );
 
 app.get('/calendar', isLoggedIn, (req, res) => {
-    res.render('calendar', { user: req.user });
+    return res.render('calendar', { user: req.user, classes: classes });
 });
 
-app.get('/tutor', isLoggedIn, (req, res) => {
+app.get('/tutor', isLoggedIn, async (req, res) => {
     let isTutor = config.get('nhsMembers').includes(req.user.emails[0].value);
     if (!isTutor) {
-        res.redirect('/calendar');
+        return res.redirect('/');
     }
-    res.render('tutor', { user: req.user, classes: classes });
+    let tutorsSubjects = await Queries.getTutorsSubjects(req.user.sub);
+    let tutorsAvailability = await Queries.getTutorAvailability(req.user.sub);
+    let formattedTutorsAvailability = [];
+    for (let day in tutorsAvailability) {
+        for (let period of tutorsAvailability[day]) {
+            formattedTutorsAvailability.push(`${day}_${period}`);
+        }
+    }
+    res.render('tutor', { user: req.user, classes: classes, tutorsSubjects: tutorsSubjects, tutorAvailability: formattedTutorsAvailability });
 });
 
-app.post("/tutor", isLoggedIn, (req, res) => {
+app.post("/tutor", isLoggedIn, async (req, res) => {
     let isTutor = config.get('nhsMembers').includes(req.user.emails[0].value);
     if (!isTutor) {
-        res.redirect('/calendar');
+        return res.redirect('/');
     }
-    /*
-            {{#each classes}}
-        <input type="checkbox" id="{{@key}}" name="{{@key}}">{{this}}<br>
-        {{/each}}
-        */
     let selectedClasses = [];
     for (let className in classes) {
         if (req.body[className]) {
             selectedClasses.push(className);
         }
     }
-    // updateTutorSubjects
-    Queries.updateTutorSubjects(req.user.sub, selectedClasses);
 
-    res.send(`You selected ${selectedClasses}`);
+    let availability = {};
+    for (let day = 0; day < 5; day++) {
+        availability[day] = [];
+        for (let period = 1; period < 10; period++) {
+            if (req.body[`${day}_${period}`]) {
+                availability[parseInt(day)].push(period);
+            }
+        }
+    }
+    for (let day in availability) {
+        if (availability[day].length === 0) {
+            delete availability[day];
+        }
+    }
+
+    let tutorsSubjects = await Queries.getTutorsSubjects(req.user.sub);
+    if (!(tutorsSubjects.sort().join(',') === selectedClasses.sort().join(','))) {
+        await Queries.updateTutorSubjects(req.user.sub, selectedClasses);
+    }
+    let tutorsAvailability = await Queries.getTutorAvailability(req.user.sub);
+    if (!((JSON.stringify(tutorsAvailability) === JSON.stringify(availability)))) {
+        await Queries.updateTutorAvailability(req.user.sub, availability);
+    }
+    return res.redirect('/tutor');
 });
 
 app.post("/calendar", isLoggedIn, (req, res) => {
     let selectedClass = req.body.class;
-    res.send(`You selected ${selectedClass}`);
+    return res.send(`You selected ${selectedClass}`);
 });
 
 app.get('/logout', (req, res) => {
     req.logout();
     req.session.destroy();
-    res.send('Goodbye!');
+    return res.redirect('/');
 });
 
 const PORT = process.env.PORT || 3000;

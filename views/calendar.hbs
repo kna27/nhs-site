@@ -10,12 +10,10 @@
     {{> header}}
     <h1>Tutor Availability Calendar</h1>
     <select id="classSelect">
-        <option value="all">All</option>
-        <option value="mai">Math Analysis I</option>
-        <option value="apcalcab">AP Calculus AB</option>
-        <option value="apcs">AP Computer Science A</option>
-        <option value="wrldhisti">World History I</option>
-        <option value="other">Other</option>
+        <option value="all" selected>All</option>
+        {{#each classes}}
+        <option value="{{@key}}">{{this}}</option>
+        {{/each}}
     </select>
     <div id="calendar"></div>
     {{> footer}}

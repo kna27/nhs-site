@@ -12,11 +12,56 @@
     <form action="/tutor" method="POST">
         <h2>Select classes you can tutor in</h2>
         {{#each classes}}
-        <input type="checkbox" id="{{@key}}" name="{{@key}}">{{this}}<br>
+            <input type="checkbox" name="{{@key}}" {{#if (contains ../tutorsSubjects @key)}}checked{{/if}}>{{this}}<br>
         {{/each}}
+
+        <table id="availability-table">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                </tr>
+            </thead>
+            <tbody id="availability-body">
+            </tbody>
+        </table>
+
         <input type="submit" value="Submit">
-    <div id="calendar"></div>
+    </form>
     {{> footer}}
 </body>
+<script>
+    window.onload = function () {
+        var tableBody = document.getElementById('availability-body');
+        var tutorAvailability = {{{ json tutorAvailability }}};
+
+    for (var period = 1; period <= 9; period++) {
+        var row = document.createElement('tr');
+
+        var periodCell = document.createElement('td');
+        periodCell.innerText = period;
+        row.appendChild(periodCell);
+
+        for (var dayOfWeek = 0; dayOfWeek < 5; dayOfWeek++) {
+            var cell = document.createElement('td');
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            let name = dayOfWeek + '_' + period;
+            checkbox.name = name;
+            if (tutorAvailability.includes(name)) {
+                checkbox.checked = true;
+            }
+            cell.appendChild(checkbox);
+            row.appendChild(cell);
+        }
+        tableBody.appendChild(row);
+    }
+    }
+
+</script>
 
 </html>
