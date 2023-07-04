@@ -12,7 +12,7 @@
     <select id="classSelect">
         <option value="all" selected>All</option>
         {{#each classes}}
-        <option value="{{@key}}">{{this}}</option>
+            <option value="{{@key}}">{{this}}</option>
         {{/each}}
     </select>
     <div id="calendar"></div>
@@ -22,6 +22,38 @@
     document.addEventListener('DOMContentLoaded', function () {
         const classSelect = document.getElementById('classSelect');
         const calendar = document.getElementById('calendar');
+
+        let table = document.createElement('table');
+        let thead = document.createElement('thead');
+        let tbody = document.createElement('tbody');
+        let tr = document.createElement('tr');
+        let th = document.createElement('th');
+        th.innerText = 'Period';
+        tr.appendChild(th);
+        for (let dayOfWeek = 0; dayOfWeek < 5; dayOfWeek++) {
+            let th = document.createElement('th');
+            th.innerText = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][dayOfWeek];
+            tr.appendChild(th);
+        }
+        thead.appendChild(tr);
+        table.appendChild(thead);
+        for (let period = 1; period <= 9; period++) {
+            let tr = document.createElement('tr');
+            let td = document.createElement('td');
+            td.innerText = period;
+            tr.appendChild(td);
+            for (let dayOfWeek = 0; dayOfWeek < 5; dayOfWeek++) {
+                let td = document.createElement('td');
+                let div = document.createElement('div');
+                div.id = dayOfWeek + '_' + period;
+                td.appendChild(div);
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        calendar.appendChild(table);
+
         classSelect.addEventListener('change', function () {
             let classSelected = classSelect.options[classSelect.selectedIndex].value;
             fetch("/calendar", {
@@ -39,7 +71,13 @@
                     }
                 })
                 .then(data => {
-                    calendar.textContent = data;
+                    let tutorAvailability = JSON.parse(data);
+                    for (let tutor in tutorAvailability) {
+                        for (let availability of tutorAvailability[tutor]) {
+                            let div = document.getElementById(availability);
+                            div.innerText += tutor + '\n';
+                        }
+                    }
                 })
                 .catch(error => {
                     window.location.href = "/calendar";

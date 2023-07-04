@@ -10,8 +10,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 var classes = {};
-// dictionary with String id (class name with no spaces) as key and String class name as value
-// load classes from config.classes
 config.get('classes').forEach((className) => {
     classes[className.replace(/\s/g, '')] = className;
 });
@@ -112,9 +110,26 @@ app.post("/tutor", isLoggedIn, async (req, res) => {
     return res.redirect('/tutor');
 });
 
-app.post("/calendar", isLoggedIn, (req, res) => {
+app.post("/calendar", isLoggedIn, async (req, res) => {
+    if (!req.user) {
+        return res.redirect('/');
+    }
     let selectedClass = req.body.class;
-    return res.send(`You selected ${selectedClass}`);
+    let tutors = await Queries.getTutorsBySubject(selectedClass);
+    let tutorsAvailability = {};
+    for (let tutor of tutors) {
+        tutorsAvailability[tutor.name] = await Queries.getTutorAvailability(tutor.google_sub);
+    }
+    let formattedTutorsAvailability = {};
+    for (let tutor in tutorsAvailability) {
+        formattedTutorsAvailability[tutor] = [];
+        for (let day in tutorsAvailability[tutor]) {
+            for (let period of tutorsAvailability[tutor][day]) {
+                formattedTutorsAvailability[tutor].push(`${day}_${period}`);
+            }
+        }
+    }
+    return res.send(formattedTutorsAvailability);
 });
 
 app.get('/logout', (req, res) => {
