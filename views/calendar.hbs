@@ -9,12 +9,29 @@
 <body>
     {{> header}}
     <h1>Tutor Availability Calendar</h1>
-    <select id="classSelect">
-        <option value="all" selected>All</option>
-        {{#each classes}}
-            <option value="{{@key}}">{{this}}</option>
-        {{/each}}
-    </select>
+    <h2>Request Tutoring</h2>
+    <form action="/request" method="POST">
+        <div id="tutorRequest" style="display:none">
+            <label for="tutor">Tutor</label>
+            <input type="text" id="tutor" name="tutor"><br>
+            <label for="student">For</label>
+            <input type="text" id="student" name="student" value="{{user.displayName}}"><br>
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject"><br>
+            <label for="date">Date</label>
+            <select id="date" name="date"></select><br>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" cols="50"
+                placeholder="Write additional information here, such as the specific chapter/section you need help in."></textarea><br>
+            <input type="submit" value="Submit">
+        </div>
+        <select id="classSelect" name="classSelect">
+            {{#each classes}}
+                <option value="{{@key}}">{{this}}</option>
+            {{/each}}
+        </select>
+    </form>
+
     <div id="calendar"></div>
     {{> footer}}
 </body>
@@ -22,6 +39,13 @@
     document.addEventListener('DOMContentLoaded', function () {
         const classSelect = document.getElementById('classSelect');
         const calendar = document.getElementById('calendar');
+        const tutorRequest = document.getElementById('tutorRequest');
+        const dateDropdown = document.getElementById('date');
+        const emailSubject = document.getElementById('subject');
+
+        var weekdayInt;
+        var weekday;
+        var period;
 
         let table = document.createElement('table');
         let thead = document.createElement('thead');
@@ -54,6 +78,13 @@
         table.appendChild(tbody);
         calendar.appendChild(table);
 
+        dateDropdown.addEventListener('change', updateSubject);
+
+        function updateSubject() {
+            let dateSelected = dateDropdown.options[dateDropdown.selectedIndex].value;
+            emailSubject.value = `[NHS Tutoring Request] ${classSelect.options[classSelect.selectedIndex].text} on ${weekday} ${dateSelected} Period ${period}`;
+        }
+
         classSelect.addEventListener('change', function () {
             let classSelected = classSelect.options[classSelect.selectedIndex].value;
             fetch("/calendar", {
@@ -72,10 +103,42 @@
                 })
                 .then(data => {
                     let tutorAvailability = JSON.parse(data);
+                    for (let period = 1; period <= 9; period++) {
+                        for (let dayOfWeek = 0; dayOfWeek < 5; dayOfWeek++) {
+                            let div = document.getElementById(dayOfWeek + '_' + period);
+                            div.innerText = '';
+                        }
+                    }
                     for (let tutor in tutorAvailability) {
                         for (let availability of tutorAvailability[tutor]) {
                             let div = document.getElementById(availability);
-                            div.innerText += tutor + '\n';
+                            let a = document.createElement('a');
+                            a.href = '#';
+                            a.innerText = tutor;
+                            a.addEventListener('click', function () {
+                                tutorRequest.style.display = 'block';
+                                document.getElementById('tutor').value = tutor;
+                                weekdayInt = availability.split('_')[0];
+                                weekday = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][weekdayInt];
+                                period = availability.split('_')[1];
+                                let date = new Date();
+                                date.setDate(date.getDate() + ((weekdayInt + 8 - date.getDay()) % 7 || 7));
+                                while (dateDropdown.firstChild) {
+                                    dateDropdown.removeChild(dateDropdown.firstChild);
+                                }
+                                for (let i = 0; i < 6; i++) {
+                                    let dateStr = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+                                    let option = document.createElement('option');
+                                    option.text = dateStr;
+                                    option.value = dateStr;
+                                    dateDropdown.add(option);
+                                    date.setDate(date.getDate() + 7);
+                                }
+                                dateDropdown.selectedIndex = 0;
+                                updateSubject();
+                            });
+                            div.appendChild(a);
+                            div.appendChild(document.createElement('br'));
                         }
                     }
                 })

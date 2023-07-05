@@ -13,6 +13,13 @@ async function getTutorByGoogleSub(google_sub) {
     return result.rows[0];
 }
 
+async function getTutorEmailByName(name) {
+    const query = `SELECT email FROM tutors WHERE name = $1`;
+    const values = [name];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+}
+
 async function deleteTutorSubjects(tutor_id) {
     const query = `DELETE FROM tutor_subjects WHERE tutor_id = $1`;
     const values = [tutor_id];
@@ -84,6 +91,7 @@ async function getTutorsBySubject(subject) {
 module.exports = {
     createTutor,
     getTutorByGoogleSub,
+    getTutorEmailByName,
     updateTutorSubjects,
     updateTutorAvailability,
     getTutorAvailability,

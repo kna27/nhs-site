@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const nodemailer = require('nodemailer');
 const passport = require('passport');
 const config = require('config');
 const Queries = require('./src/queries');
@@ -12,6 +13,14 @@ app.use(express.urlencoded({ extended: true }));
 var classes = {};
 config.get('classes').forEach((className) => {
     classes[className.replace(/\s/g, '')] = className;
+});
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: config.get('server.email.username'),
+        pass: config.get('server.email.password')
+    }
 });
 
 const Handlebars = require("hbs");
@@ -130,6 +139,50 @@ app.post("/calendar", isLoggedIn, async (req, res) => {
         }
     }
     return res.send(formattedTutorsAvailability);
+});
+
+app.post("/request", isLoggedIn, async (req, res) => {
+    if (!req.user) {
+        return res.redirect('/');
+    }
+    let tutor = req.body.tutor;
+    let student = req.user.displayName;
+    let subject = req.body.subject;
+    let selectedClass = classes[req.body.classSelect];
+    let date = req.body.date;
+    let message = req.body.message;
+    let tutorEmail = await Queries.getTutorEmailByName(tutor);
+    tutorEmail = tutorEmail.email;
+    let studentEmail = req.user.emails[0].value;
+    if (!message) {
+        message = "";
+    }
+    else {
+        message = `\nAdditional message from ${student}:\n\n${message}`
+    }
+    let emailMessage = `You have a new tutoring request from ${student} for ${selectedClass} on ${date}. Please follow up with them as soon as possible. You can contact them at ${studentEmail}. ${message}`;
+    var mailOptions = {
+        from: config.get('server.email'),
+        to: tutorEmail,
+        subject: subject,
+        text: emailMessage
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log("Error sending email: " + error);
+            return res.redirect('/calendar');
+        } else {
+            mailOptions.text = `This is confirmation that you've requested tutoring from ${tutor} for ${selectedClass} on ${date}. If they do not reach out to you within a few days, you can contact them at ${tutorEmail}.`;
+            mailOptions.to = studentEmail;
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log("Error sending email: " + error);
+                }
+                return res.redirect('/calendar');
+            });
+        }
+    });
 });
 
 app.get('/logout', (req, res) => {
