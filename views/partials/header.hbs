@@ -1,0 +1,20 @@
+<header>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/bylaws">Bylaws</a></li>
+            <li><a href="/requirements">Membership Requirements</a></li>
+            {{#if user}}
+            {{#if user.isMember}}
+            <li><a href="/tutor">Update Tutoring Availability</a></li>
+            <li><a href="/logging">Log Community Service/Tutoring Hours</a></li>
+            {{else}}
+            <li><a href="/calendar">Get Tutoring</a></li>
+            {{/if}}
+            <li><a href="/logout">Logout</a></li>
+            {{else}}
+            <li><a href="/auth">Login</a></li>
+            {{/if}}
+        </ul>
+    </nav>
+</header>

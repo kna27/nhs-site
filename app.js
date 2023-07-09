@@ -47,7 +47,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', { user: req.user });
+});
+
+app.get('/bylaws', (req, res) => {
+    res.render('bylaws', { user: req.user });
+});
+
+app.get('/requirements', (req, res) => {
+    res.render('requirements', { user: req.user });
+});
+
+app.get('/logging', isLoggedIn, (req, res) => {
+    if (!req.user.isMember) {
+        return res.redirect('/');
+    }
+    res.render('logging', { user: req.user });
 });
 
 app.get('/auth',
@@ -56,18 +71,26 @@ app.get('/auth',
 
 app.get('/auth/callback',
     passport.authenticate('google', {
-        successRedirect: '/calendar',
+        successRedirect: '/success',
         failureRedirect: '/'
     })
 );
+
+app.get('/success', isLoggedIn, async (req, res) => {
+    req.user.isMember = config.get('nhsMembers').includes(req.user.emails[0].value);
+    if (req.user.isMember) {
+        return res.redirect('/tutor');
+    } else {
+        return res.redirect('/calendar');
+    }
+});
 
 app.get('/calendar', isLoggedIn, (req, res) => {
     return res.render('calendar', { user: req.user, classes: classes });
 });
 
 app.get('/tutor', isLoggedIn, async (req, res) => {
-    let isTutor = config.get('nhsMembers').includes(req.user.emails[0].value);
-    if (!isTutor) {
+    if (!req.user.isMember) {
         return res.redirect('/');
     }
     let tutorsSubjects = await Queries.getTutorsSubjects(req.user.sub);
@@ -82,8 +105,7 @@ app.get('/tutor', isLoggedIn, async (req, res) => {
 });
 
 app.post("/tutor", isLoggedIn, async (req, res) => {
-    let isTutor = config.get('nhsMembers').includes(req.user.emails[0].value);
-    if (!isTutor) {
+    if (!req.user.isMember) {
         return res.redirect('/');
     }
     let selectedClasses = [];
@@ -186,8 +208,12 @@ app.post("/request", isLoggedIn, async (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-    req.logout();
-    req.session.destroy();
+    req.session.destroy(() => {
+        return res.redirect('/');
+    });
+});
+
+app.get('*', (req, res) => {
     return res.redirect('/');
 });
 
