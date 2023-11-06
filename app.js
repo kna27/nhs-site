@@ -86,7 +86,7 @@ app.get('/success', isLoggedIn, async (req, res) => {
 });
 
 app.get('/calendar', isLoggedIn, (req, res) => {
-    return res.render('calendar', { user: req.user, classes: classes });
+    return res.render('calendar', { user: req.user, classes: classes, success: req.query.success});
 });
 
 app.get('/tutor', isLoggedIn, async (req, res) => {
@@ -111,7 +111,7 @@ app.post("/tutor", isLoggedIn, async (req, res) => {
     let selectedClasses = [];
     for (let className in classes) {
         if (req.body[className]) {
-            selectedClasses.push(className);
+            selectedClasses.push(className); 
         }
     }
 
@@ -201,7 +201,7 @@ app.post("/request", isLoggedIn, async (req, res) => {
                 if (error) {
                     console.log("Error sending email: " + error);
                 }
-                return res.redirect('/calendar');
+                return res.redirect('/calendar?success=true');
             });
         }
     });

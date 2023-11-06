@@ -8,30 +8,34 @@
 
 <body>
     {{> header}}
-    <h1>Tutoring Options</h1>
-    <form action="/tutor" method="POST">
-        <h2>Select classes you can tutor in</h2>
-        {{#each classes}}
-            <input type="checkbox" name="{{@key}}" {{#if (contains ../tutorsSubjects @key)}}checked{{/if}}>{{this}}<br>
-        {{/each}}
-
-        <table id="availability-table">
-            <thead>
-                <tr>
-                    <th>Period</th>
-                    <th>Monday</th>
-                    <th>Tuesday</th>
-                    <th>Wednesday</th>
-                    <th>Thursday</th>
-                    <th>Friday</th>
-                </tr>
-            </thead>
-            <tbody id="availability-body">
-            </tbody>
-        </table>
-
-        <input type="submit" value="Submit">
-    </form>
+    <div class="content section">
+        <h1>Tutoring Options</h1>
+        <form action="/tutor" method="POST">
+            <h2>Select classes you can tutor in</h2>
+            <div class="class-select">
+                {{#each classes}}
+                    <input type="checkbox" name="{{@key}}" {{#if (contains ../tutorsSubjects
+                        @key)}}checked{{/if}}>{{this}}<br>
+                {{/each}}
+            </div>
+            <h2>Select when you are available</h2>
+            <table id="availability-table">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                    </tr>
+                </thead>
+                <tbody id="availability-body">
+                </tbody>
+            </table>
+            <button type="submit" class="button is-primary">Submit</button>
+        </form>
+    </div>
     {{> footer}}
 </body>
 <script>

@@ -7,3 +7,10 @@
 body {
     text-align: center;
 }
+
+.class-select {
+    overflow-y: auto;
+    max-height: 20vh;
+    width: 50%;
+    margin: 0 auto;
+}

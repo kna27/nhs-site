@@ -8,34 +8,59 @@
 
 <body>
     {{> header}}
-    <h1>Tutor Availability Calendar</h1>
-    <h2>Request Tutoring</h2>
-    <form action="/request" method="POST">
-        <div id="tutorRequest" style="display:none">
-            <label for="tutor">Tutor</label>
-            <input type="text" id="tutor" name="tutor"><br>
-            <label for="student">For</label>
-            <input type="text" id="student" name="student" value="{{user.displayName}}"><br>
-            <label for="subject">Subject</label>
-            <input type="text" id="subject" name="subject"><br>
-            <label for="date">Date</label>
-            <select id="date" name="date"></select><br>
-            <label for="message">Message</label>
-            <textarea id="message" name="message" rows="4" cols="50"
-                placeholder="Write additional information here, such as the specific chapter/section you need help in."></textarea><br>
-            <input type="submit" value="Submit">
+    <div class="content">
+        {{#if success}}
+        <div class="notification is-primary" style="width:80%">
+            <button class="delete"></button>
+            Request sent! Tutor should contact you soon. Check your email for a confirmation.
         </div>
-        <select id="classSelect" name="classSelect">
-            {{#each classes}}
-                <option value="{{@key}}">{{this}}</option>
-            {{/each}}
-        </select>
-    </form>
+        {{/if}}
+        <h1>Tutor Availability Calendar</h1>
+        <h2>Request Tutoring</h2>
+        <form action="/request" method="POST">
+            <div id="tutorRequest" style="display:none">
+                <label class="label" for="tutor">Tutor</label>
+                <input class="input" style="width:50%" type="text" id="tutor" name="tutor" readonly><br>
+                <label class="label" for="student">For</label>
+                <input class="input" style="width:50%" type="text" id="student" name="student"
+                    value="{{user.displayName}}"><br>
+                <label class="label" for="subject">Subject</label>
+                <input class="input" style="width:50%" type="text" id="subject" name="subject" readonly><br>
+                <label class="label" for="date">Date</label>
+                <select class="input" style="width:50%" id="date" name="date"></select><br>
+                <label class="label" for="message">Message</label>
+                <textarea class="input mb-5" style="width:50%" id="message" name="message" rows="4" cols="50"
+                    placeholder="Write additional information here, such as the specific chapter/section you need help in."></textarea><br>
+                <button type="button" class="button is-danger" onclick="cancel()">Cancel</button>
+                <button type="submit" class="button is-primary">Submit</button>
+                <hr>
+            </div>
+            <select id="classSelect" name="classSelect">
+                {{#each classes}}
+                    <option value="{{@key}}">{{this}}</option>
+                {{/each}}
+            </select>
+        </form>
 
-    <div id="calendar"></div>
+        <div id="calendar"></div>
+    </div>
     {{> footer}}
 </body>
 <script>
+    const cancel = function () {
+        document.getElementById('tutorRequest').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+            const $notification = $delete.parentNode;
+
+            $delete.addEventListener('click', () => {
+                $notification.parentNode.removeChild($notification);
+            });
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         const classSelect = document.getElementById('classSelect');
         const calendar = document.getElementById('calendar');

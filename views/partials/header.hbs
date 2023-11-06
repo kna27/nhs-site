@@ -1,20 +1,18 @@
-<header>
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/bylaws">Bylaws</a></li>
-            <li><a href="/requirements">Membership Requirements</a></li>
+<header class="mb-5">
+    <nav class="navbar is-primary has-shadow">
+            <a href="/" class="navbar-item">Home</a>
+            <a href="/bylaws" class="navbar-item">Bylaws</a>
+            <a href="/requirements" class="navbar-item">Membership Requirements</a>
             {{#if user}}
             {{#if user.isMember}}
-            <li><a href="/tutor">Update Tutoring Availability</a></li>
-            <li><a href="/logging">Log Community Service/Tutoring Hours</a></li>
+            <a href="/tutor" class="navbar-item">Update Tutoring Availability</a>
+            <a href="/logging" class="navbar-item">Log Community Service/Tutoring Hours</a>
             {{else}}
-            <li><a href="/calendar">Get Tutoring</a></li>
+            <a href="/calendar" class="navbar-item">Get Tutoring</a>
             {{/if}}
-            <li><a href="/logout">Logout</a></li>
+            <a href="/logout" class="navbar-item">Logout</a>
             {{else}}
-            <li><a href="/auth">Login</a></li>
+            <a href="/auth" class="navbar-item">Login</a>
             {{/if}}
-        </ul>
     </nav>
 </header>
